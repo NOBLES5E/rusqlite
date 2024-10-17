@@ -140,6 +140,12 @@ mod build_bundled {
             .flag("-D_POSIX_THREAD_SAFE_FUNCTIONS") // cross compile with MinGW
             .warnings(false);
 
+        if let Ok(target) = env::var("TARGET") {
+            if target == "aarch64-apple-ios-sim" {
+                cfg.flag("--target").flag("aarch64-apple-ios-simulator");
+            }
+        }
+
         if cfg!(feature = "bundled-sqlcipher") {
             cfg.flag("-DSQLITE_HAS_CODEC").flag("-DSQLITE_TEMP_STORE=2");
 
