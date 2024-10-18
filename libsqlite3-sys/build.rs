@@ -11,11 +11,6 @@ fn win_target() -> bool {
     env::var("CARGO_CFG_WINDOWS").is_ok()
 }
 
-fn is_ios_simulator() -> bool {
-    env::var("CARGO_CFG_TARGET_OS").map_or(false, |v| v == "ios")
-        && env::var("CARGO_CFG_TARGET_ENV").map_or(false, |v| v == "simulator")
-}
-
 /// Tells whether we're building for Android.
 /// See [`win_target`]
 #[cfg(any(feature = "bundled", feature = "bundled-windows"))]
@@ -101,6 +96,11 @@ mod build_bundled {
     use std::path::{Path, PathBuf};
 
     use super::{is_compiler, win_target};
+
+    fn is_ios_simulator() -> bool {
+        env::var("CARGO_CFG_TARGET_OS").map_or(false, |v| v == "ios")
+            && env::var("CARGO_CFG_TARGET_ENV").map_or(false, |v| v == "simulator")
+    }
 
     pub fn main(out_dir: &str, out_path: &Path) {
         let lib_name = super::lib_name();
