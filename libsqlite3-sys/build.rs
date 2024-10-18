@@ -142,7 +142,7 @@ mod build_bundled {
 
         if let Ok(target) = env::var("TARGET") {
             if target == "aarch64-apple-ios-sim" {
-                cfg.flag("-target").flag("aarch64-apple-ios-simulator");
+                cfg.flag("--target").flag("aarch64-apple-ios-simulator");
             }
         }
 
