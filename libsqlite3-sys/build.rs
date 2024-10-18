@@ -11,6 +11,11 @@ fn win_target() -> bool {
     env::var("CARGO_CFG_WINDOWS").is_ok()
 }
 
+fn is_ios_simulator() -> bool {
+    env::var("CARGO_CFG_TARGET_OS").map_or(false, |v| v == "ios")
+        && env::var("CARGO_CFG_TARGET_ENV").map_or(false, |v| v == "simulator")
+}
+
 /// Tells whether we're building for Android.
 /// See [`win_target`]
 #[cfg(any(feature = "bundled", feature = "bundled-windows"))]
@@ -139,6 +144,23 @@ mod build_bundled {
             .flag("-DHAVE_ISNAN")
             .flag("-D_POSIX_THREAD_SAFE_FUNCTIONS") // cross compile with MinGW
             .warnings(false);
+
+        // Detect if building for iOS Simulator
+        let is_simulator = is_ios_simulator();
+
+        if is_simulator {
+            // Set the appropriate SDK for the simulator
+            if let Ok(sdk_path) = std::process::Command::new("xcrun")
+                .args(&["--sdk", "iphonesimulator", "--show-sdk-path"])
+                .output()
+            {
+                let sdk_path = String::from_utf8_lossy(&sdk_path.stdout).trim().to_string();
+                cfg.flag(&format!("-isysroot {}", sdk_path));
+                // Additional simulator-specific flags can be added here
+            } else {
+                panic!("Failed to determine iOS Simulator SDK path");
+            }
+        }
 
         if cfg!(feature = "bundled-sqlcipher") {
             cfg.flag("-DSQLITE_HAS_CODEC").flag("-DSQLITE_TEMP_STORE=2");
